@@ -23,7 +23,7 @@ class BaseSurveyModelAdmin(ModelAdmin):
         self.list_display = (list(self.list_display) or []) + ['survey_creator', "view_submissions"]
         self.survey_creator.__func__.short_description = f'Survey Creator'
         self.view_submissions.__func__.short_description = f'View Submissions'
-
+    
     def survey_creator(self, obj):
         button_html = f"""
         <a href="{obj.get_survey_creator_url()}" class="button button-small bicolor button--icon">
@@ -36,7 +36,7 @@ class BaseSurveyModelAdmin(ModelAdmin):
         </a>
         """
         return mark_safe(button_html)
-
+    
     def view_submissions(self, obj):
         button_html = f"""
         <a href="{obj.get_survey_results_url()}" class="button button-small button--icon button-secondary">
@@ -54,13 +54,13 @@ class BaseSurveyModelAdmin(ModelAdmin):
 class SurveyCreatorMenuItem(ActionMenuItem):
     name = 'action-survey-creator'
     label = "Survey Creator"
-
+    
     def is_shown(self, context):
         page = context.get("page")
         if isinstance(page, AbstractSurveyJsFormPage):
             return True
         return False
-
+    
     def get_url(self, context):
         page = context.get("page")
         return page.get_survey_creator_url()
@@ -72,19 +72,19 @@ def register_survejs_creator_menu_item(*args):
 
 
 @hooks.register('register_page_listing_buttons')
-def page_listing_buttons(page, page_perms, next_url=None):
+def page_listing_buttons(page, user, next_url=None):
     if isinstance(page, AbstractSurveyJsFormPage):
         creator_url = page.get_survey_creator_url()
-
-        yield wagtail_admin_widgets.PageListingButton(
+        
+        yield wagtail_admin_widgets.ListingButton(
             "Survey Creator",
             creator_url,
             priority=50
         )
-
+        
         if page.live:
             results_url = page.get_survey_results_url()
-            yield wagtail_admin_widgets.PageListingButton(
+            yield wagtail_admin_widgets.ListingButton(
                 "Survey Results",
                 results_url,
                 priority=60
